@@ -97,9 +97,15 @@ export async function getOrder(id) {
   const db = await getDb();
   return await db.get(
     sql`
-SELECT *
-FROM CustomerOrder
-WHERE id = $1`,
+SELECT co.*,
+  c.companyname as customername,
+  e.lastname AS employeename
+FROM CustomerOrder AS co
+LEFT JOIN Customer AS c 
+  ON co.customerid = c.id
+LEFT JOIN Employee AS e 
+  ON co.employeeid = e.id
+WHERE co.id = $1`,
     id
   );
 }
