@@ -119,9 +119,10 @@ export async function getOrderDetails(id) {
   const db = await getDb();
   return await db.all(
     sql`
-SELECT *, unitprice * quantity as price
-FROM OrderDetail
-WHERE orderid = $1`,
+SELECT od.*, od.unitprice * od.quantity as price, productname
+FROM OrderDetail AS od
+LEFT JOIN Product AS p ON od.productid = p.id
+WHERE od.orderid = $1`,
     id
   );
 }
