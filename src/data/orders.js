@@ -53,7 +53,7 @@ export async function getAllOrders(opts = {}, whereClause='') {
   const db = await getDb();
   let sortClause = '';
   if (options.sort && options.order) {
-    sortClause = sql`ORDER BY ${options.sort} ${options.order.toUpperCase()}`
+    sortClause = sql`ORDER BY co.${options.sort} ${options.order.toUpperCase()}`
   }
   let paginationClause = '';
   if (typeof options.page !== 'undefined' && options.perPage) {
@@ -61,8 +61,13 @@ export async function getAllOrders(opts = {}, whereClause='') {
     paginationClause = sql`LIMIT ${options.perPage} OFFSET ${(options.page -1) * options.perPage}`
   }
   return await db.all(sql`
-SELECT ${ALL_ORDERS_COLUMNS.join(',')}
-FROM CustomerOrder ${whereClause}
+SELECT ${ALL_ORDERS_COLUMNS.map(x => `co.${x}`).join(',')},
+c.companyname as customername,
+e.lastname AS employeename
+FROM CustomerOrder AS co
+LEFT JOIN Customer AS c ON co.customerid = c.id
+LEFT JOIN Employee AS e ON co.employeeid = e.id
+${whereClause}
 ${sortClause}
 ${paginationClause}`);
 }
