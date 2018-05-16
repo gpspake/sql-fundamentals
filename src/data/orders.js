@@ -38,9 +38,10 @@ const DEFAULT_ORDER_COLLECTION_OPTIONS = Object.freeze(
  * NOTE: This table has tens of thousands of records, so we'll probably have to apply
  *    some strategy for viewing only a part of the collection at any given time
  * @param {Partial<OrderCollectionOptions>} opts Options for customizing the query
+ * @param {Partial<String>} whereClause SQL WHERE clause
  * @returns {Promise<Order[]>} the orders
  */
-export async function getAllOrders(opts = {}) {
+export async function getAllOrders(opts = {}, whereClause='') {
   // Combine the options passed into the function with the defaults
 
   /** @type {OrderCollectionOptions} */
@@ -50,9 +51,20 @@ export async function getAllOrders(opts = {}) {
   };
 
   const db = await getDb();
+  let sortClause = '';
+  if (options.sort && options.order) {
+    sortClause = sql`ORDER BY ${options.sort} ${options.order.toUpperCase()}`
+  }
+  let paginationClause = '';
+  if (typeof options.page !== 'undefined' && options.perPage) {
+    //if page & perPage are defined, offset by the number of items per page multiplied by one less than the current page
+    paginationClause = sql`LIMIT ${options.perPage} OFFSET ${(options.page -1) * options.perPage}`
+  }
   return await db.all(sql`
 SELECT ${ALL_ORDERS_COLUMNS.join(',')}
-FROM CustomerOrder`);
+FROM CustomerOrder ${whereClause}
+${sortClause}
+${paginationClause}`);
 }
 
 /**
