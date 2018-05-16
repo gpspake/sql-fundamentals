@@ -74,7 +74,13 @@ ${paginationClause}`);
  */
 export async function getCustomerOrders(customerId, opts = {}) {
   // ! This is going to retrieve ALL ORDERS, not just the ones that belong to a particular customer. We'll need to fix this
-  return getAllOrders(opts);
+
+  /** @type {OrderCollectionOptions} */
+  let options = {
+    ...{sort: 'shippeddate', order: 'asc'},
+    ...opts
+  };
+  return getAllOrders(options, sql`WHERE customerID = '${customerId}'`);
 }
 
 /**
