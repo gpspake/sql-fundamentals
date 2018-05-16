@@ -4,4 +4,4 @@ dist
 !master.sqlite
 scratch.*
 .idea
-
+.DS_Store
